@@ -33,6 +33,7 @@ while [ -n "$1" ]; do
   shift
 done
 # Close!
+cat <<DOC
 current_branch_remote=`git config --get branch."$current_branch".remote`
 git checkout "$dest_branch" && \
 git merge "$message_arg" "$message" "$squash_arg" "$current_branch" && \
@@ -44,3 +45,4 @@ git branch -D "$current_branch" && \
     true
   fi
 }
+DOC
