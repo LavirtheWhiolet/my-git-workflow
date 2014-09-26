@@ -46,9 +46,9 @@ dest_branch = ARGV.pop
 ARGV.pop if ARGV.last == "--"
 merge_opts = ARGV
 # Close the current branch!
-current_branch = `git symbolic-ref --short HEAD`
+current_branch = `git symbolic-ref --short HEAD`.strip
 current_branch_remote =
-  `git config --get branch.#{current_branch.esc}.remote`.nil_if_empty
+  `git config --get branch.#{current_branch.esc}.remote`.strip.nil_if_empty
 sh "git checkout -- #{dest_branch.esc}"
 sh "git merge #{merge_opts.esc} -- #{current_branch.esc}"
 sh "git branch -D -- #{current_branch.esc}"
