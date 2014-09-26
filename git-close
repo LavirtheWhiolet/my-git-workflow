@@ -2,7 +2,7 @@
 
 # Parse arguments.
 this=`basename "$0"`
-current_branch=`cat .git/HEAD`
+current_branch=`git symbolic-ref --short HEAD`
 dest_branch=""
 squash_arg=""
 message_arg=""
@@ -32,3 +32,9 @@ while [ -n "$1" ]; do
   esac
   shift
 done
+# Close!
+current_branch_remote=`git config --get branch.$current_branch.remote`
+git checkout "$dest_branch" && \
+git merge "$message_arg" "$message" "$squash_arg" "$current_branch" && \
+git branch -D "$current_branch" &&
+
