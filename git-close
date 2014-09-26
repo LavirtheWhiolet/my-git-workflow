@@ -13,7 +13,10 @@ while [ -n "$1" ]; do
         echo "$this: -m or --message require the message"
         exit 1
       fi
-      message_arg="-m '$2'"
+      message_escaped=`printf "%q" "$2"`
+      message_arg="-m $message_escaped"
+      echo $message_arg
+      exit
       shift
       ;;
     -s|--squash)
