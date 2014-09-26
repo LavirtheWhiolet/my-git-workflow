@@ -1,45 +1,45 @@
-#!/bin/bash
+#!/usr/bin/env ruby
+require 'shellwords'
 
-# Parse arguments.
-this=`basename "$0"`
-current_branch=`git symbolic-ref --short HEAD`
-dest_branch=""
-squash_arg=""
-message_arg=""
-while [ -n "$1" ]; do
-  case "$1" in
-    -m|--message)
-      if [ -z "$2" ]; then
-        echo "$this: -m or --message require the message"
-        exit 1
-      fi
-      message_escaped=`printf "%q" "$2"`
-      message_arg="-m \"$message_escaped\""
-      shift
-      ;;
-    -s|--squash)
-      squash_arg="--squash"
-      ;;
-    -?*)
-      echo "$this: unknown option: $1"
-      exit 1
-      ;;
-    *)
-      dest_branch="$1"
-      break
-      ;;
-  esac
-  shift
-done
-# Close!
-current_branch_remote=`git config --get branch."$current_branch".remote`
-git checkout "$dest_branch" && \
-git merge $message_arg $squash_arg "$current_branch" && \
-git branch -D "$current_branch" && \
-{
-  if [ -n "$current_branch_remote" ]; then
-    git push "$current_branch_remote" ":$current_branch"
-  else
-    true
-  fi
-}
+def sh(command)
+  system command
+  exit $?.exitstatus if $?.exitstatus != 0
+end
+
+class String
+  
+  def esc
+    Shellwords.shellescape(self)
+  end
+  
+end
+
+class Array
+  
+  def esc
+    self.map(&:esc).join(" ")
+  end
+  
+end
+
+# Parse args.
+if ARGV[0] == "-h" or ARGV[0] == "--help"
+  puts HELP
+  exit
+end
+program = File.basename $0
+current_branch = `git symbolic-ref --short HEAD`
+dest_branch = ARGV.pop
+merge_opts = ARGV
+# Close the branch!
+def hyphens_escape_before(last_arg)
+  if last_arg.start_with? "-" then "--" else "" end
+end
+current_branch_remote = `git config --get branch.#{current_branch.esc}.remote`
+current_branch_remote = nil if current_branch_remote == ""
+sh "git checkout #{hyphens_escape_before(dest_branch)} #{dest_branch.esc}"
+sh "git merge #{ARGV}"
+sh "git branch -D #{current_branch.esc}"
+if current_branch_remote then
+  sh "git push #{current_branch_remote} :#{current_branch.esc}"
+end
