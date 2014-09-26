@@ -33,8 +33,14 @@ while [ -n "$1" ]; do
   shift
 done
 # Close!
-current_branch_remote=`git config --get branch.$current_branch.remote`
+current_branch_remote=`git config --get branch."$current_branch".remote`
 git checkout "$dest_branch" && \
 git merge "$message_arg" "$message" "$squash_arg" "$current_branch" && \
-git branch -D "$current_branch" &&
-
+git branch -D "$current_branch" && \
+{
+  if [ -n "$current_branch_remote" ]; then
+    git push "$current_branch_remote" :"$current_branch"
+  else
+    true
+  fi
+}
