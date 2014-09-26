@@ -6,16 +6,14 @@ current_branch=`git symbolic-ref --short HEAD`
 dest_branch=""
 squash_arg=""
 message_arg=""
-message=""
 while [ -n "$1" ]; do
   case "$1" in
     -m|--message)
       if [ -z "$2" ]; then
-        echo "$this: --message requires the message"
+        echo "$this: -m or --message require the message"
         exit 1
       fi
-      message_arg="-m"
-      message="$2"
+      message_arg="-m '$2'"
       shift
       ;;
     -s|--squash)
@@ -35,11 +33,11 @@ done
 # Close!
 current_branch_remote=`git config --get branch."$current_branch".remote`
 git checkout "$dest_branch" && \
-git merge "$message_arg" "$message" "$squash_arg" "$current_branch" && \
+git merge $message_arg $squash_arg "$current_branch" && \
 git branch -D "$current_branch" && \
 {
   if [ -n "$current_branch_remote" ]; then
-    git push "$current_branch_remote" :"$current_branch"
+    git push "$current_branch_remote" ":$current_branch"
   else
     true
   fi
