@@ -26,9 +26,11 @@ class Array
   
 end
 
+PROGRAM = File.basename $0
+
 HELP = <<HELP
 
-Usage: git close [-h|--help] [merge-options] [--] upstream-branch
+Usage: #{PROGRAM} [-h|--help] [merge-options] [--] upstream-branch
 
 Merges current branch into upstream-branch and deletes the current branch
 locally and remotely.
@@ -40,7 +42,6 @@ if ARGV[0] == "-h" or ARGV[0] == "--help"
   print HELP
   exit
 end
-program = File.basename $0
 dest_branch = ARGV.pop
 ARGV.pop if ARGV.last == "--"
 merge_opts = ARGV
