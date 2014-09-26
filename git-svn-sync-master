@@ -1,5 +1,16 @@
 #!/bin/bash
 
+if [ "$1" = "-h" -o "$1" = "--help" ]; then
+  cat <<HELP
+
+Usage: git-svn-sync-master
+
+Synchronizes master branch with SVN trunk.
+
+HELP
+  exit
+fi
+
 current_branch=`git symbolic-ref --short HEAD`
 git checkout master && \
 git svn rebase && \
