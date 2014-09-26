@@ -14,8 +14,7 @@ while [ -n "$1" ]; do
         exit 1
       fi
       message_escaped=`printf "%q" "$2"`
-      message_escaped=`printf "%q" "$message_escaped"`
-      message_arg="-m $message_escaped"
+      message_arg="-m \"$message_escaped\""
       shift
       ;;
     -s|--squash)
