@@ -1,0 +1,8 @@
+#!/bin/bash
+
+current_branch=`git symbolic-ref --short HEAD`
+git checkout master && \
+git svn rebase && \
+git svn dcommit && \
+git push && \
+git checkout "$current_branch"
