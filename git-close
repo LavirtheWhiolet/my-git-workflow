@@ -42,4 +42,3 @@ git branch -D "$current_branch" && \
     true
   fi
 }
-
