@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Parse arguments.
+this=`basename "$0"`
+current_branch=`cat .git/HEAD`
+dest_branch=""
+squash_arg=""
+message_arg=""
+message=""
+while [ -n "$1" ]; do
+  case "$1" in
+    -m|--message)
+      if [ -z "$2" ]; then
+        echo "$this: --message requires the message"
+        exit 1
+      fi
+      message_arg="-m"
+      message="$2"
+      shift
+      ;;
+    -s|--squash)
+      squash_arg="--squash"
+      ;;
+    -?*)
+      echo "$this: unknown option: $1"
+      exit 1
+      ;;
+    *)
+      dest_branch="$1"
+      break
+      ;;
+  esac
+  shift
+done
