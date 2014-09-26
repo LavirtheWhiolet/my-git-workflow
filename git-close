@@ -12,6 +12,10 @@ class String
     Shellwords.shellescape(self)
   end
   
+  def nil_if_empty
+    nil if empty?
+  end
+  
 end
 
 class Array
@@ -22,24 +26,31 @@ class Array
   
 end
 
+HELP = <<HELP
+
+Usage: git close [-h|--help] [merge-options] [--] upstream-branch
+
+Merges current branch into upstream-branch and deletes the current branch
+locally and remotely.
+
+HELP
+
 # Parse args.
 if ARGV[0] == "-h" or ARGV[0] == "--help"
-  puts HELP
+  print HELP
   exit
 end
 program = File.basename $0
-current_branch = `git symbolic-ref --short HEAD`
 dest_branch = ARGV.pop
+ARGV.pop if ARGV.last == "--"
 merge_opts = ARGV
-# Close the branch!
-def hyphens_escape_before(last_arg)
-  if last_arg.start_with? "-" then "--" else "" end
-end
-current_branch_remote = `git config --get branch.#{current_branch.esc}.remote`
-current_branch_remote = nil if current_branch_remote == ""
-sh "git checkout #{hyphens_escape_before(dest_branch)} #{dest_branch.esc}"
-sh "git merge #{ARGV}"
-sh "git branch -D #{current_branch.esc}"
+# Close the current branch!
+current_branch = `git symbolic-ref --short HEAD`
+current_branch_remote =
+  `git config --get branch.#{current_branch.esc}.remote`.nil_if_empty
+sh "git checkout -- #{dest_branch.esc}"
+sh "git merge #{merge_opts.esc} -- #{current_branch.esc}"
+sh "git branch -D -- #{current_branch.esc}"
 if current_branch_remote then
-  sh "git push #{current_branch_remote} :#{current_branch.esc}"
+  sh "git push -- #{current_branch_remote} :#{current_branch.esc}"
 end
