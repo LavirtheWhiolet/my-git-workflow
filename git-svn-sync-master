@@ -3,9 +3,12 @@
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
   cat <<HELP
 
-Usage: git-svn-sync-master
+Usage: git-svn-sync-master [-h|--help]
 
 Synchronizes master branch with SVN trunk.
+
+If `-h' or `--help' is specified then this program prints this message and
+exits.
 
 HELP
   exit
