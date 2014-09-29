@@ -33,11 +33,11 @@ HELP = <<HELP
 Usage: #{PROGRAM} [-h|--help] branch-base-name
 
 Creates new branch and checks it out. The new branch name is chosen according to
-the following rules: 1) if the current branch is `master' then
+the following rules: 1) if the current branch is "master" then
 the new branch is branch-base-name; 2) otherwise the new branch is
-`<current-branch-name>.d/<branch-base-name>'.
+"<current-branch-name>.d/<branch-base-name>".
 
-If `-h' or `--help' is specified then this program prints this message and
+If "-h" or "--help" is specified then this program prints this message and
 exits.
 
 HELP

@@ -35,13 +35,13 @@ Usage: #{PROGRAM} [-h|--help] [merge-options] upstream-branch
 Merges current branch into upstream-branch and deletes the current branch
 locally and remotely.
 
-If upstream-branch is `-' then: 1) if the current branch is named like
-`<parent>.d/<name>' then `<parent>' is used as upstream-branch; 2) otherwise
-`master' is used.
+If upstream-branch is "-" then: 1) if the current branch is named like
+"<parent>.d/<name>" then "<parent>" is used as upstream-branch; 2) otherwise
+"master" is used.
 
 merge-options are options passed to git-merge.
 
-If `-h' or `--help' is specified then this program prints this message and
+If "-h" or "--help" is specified then this program prints this message and
 exits.
 
 HELP

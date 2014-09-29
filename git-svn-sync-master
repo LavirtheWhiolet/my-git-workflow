@@ -7,7 +7,7 @@ Usage: git-svn-sync-master [-h|--help]
 
 Synchronizes master branch with SVN trunk.
 
-If `-h' or `--help' is specified then this program prints this message and
+If "-h" or "--help" is specified then this program prints this message and
 exits.
 
 HELP

@@ -34,7 +34,7 @@ Usage: #{PROGRAM} [-h|--help] branch
 
 Removes branch locally and remotely.
 
-If `-h' or `--help' is specified then this program prints this message and
+If "-h" or "--help" is specified then this program prints this message and
 exits.
 
 HELP
