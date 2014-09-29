@@ -13,7 +13,9 @@ class String
   end
   
   def nil_if_empty
-    nil if empty?
+    if empty? then nil
+    else self
+    end
   end
   
 end
