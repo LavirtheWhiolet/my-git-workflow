@@ -16,6 +16,7 @@ fi
 
 current_branch=`git symbolic-ref --short HEAD`
 git checkout master && \
+git pull --rebase && \
 git svn rebase && \
 git svn dcommit && \
 git push && \
