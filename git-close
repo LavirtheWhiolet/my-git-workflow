@@ -30,7 +30,7 @@ PROGRAM = File.basename $0
 
 HELP = <<HELP
 
-Usage: #{PROGRAM} [merge-options] upstream-branch
+Usage: #{PROGRAM} [-h|--help] [merge-options] upstream-branch
 
 Merges current branch into upstream-branch and deletes the current branch
 locally and remotely.
@@ -40,6 +40,9 @@ If upstream-branch is `-' then: 1) if the current branch is named like
 `master' is used.
 
 merge-options are options passed to git-merge.
+
+If `-h' or `--help' is specified then this program prints this message and
+exits.
 
 HELP
 
