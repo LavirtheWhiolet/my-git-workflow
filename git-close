@@ -51,7 +51,7 @@ end
 current_branch = `git symbolic-ref --short HEAD`.strip
 upstream_branch = ARGV.pop
 if upstream_branch.nil? then
-  abort %(#{PROGRAM}: upstream-branch is not specified)
+  abort %(upstream-branch is not specified)
 end
 if upstream_branch == "-" then
   upstream_branch =
