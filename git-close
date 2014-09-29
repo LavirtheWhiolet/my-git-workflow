@@ -30,29 +30,40 @@ PROGRAM = File.basename $0
 
 HELP = <<HELP
 
-Usage: #{PROGRAM} [-h|--help] [merge-options] upstream-branch
+Usage: #{PROGRAM} [merge-options] upstream-branch
 
 Merges current branch into upstream-branch and deletes the current branch
 locally and remotely.
 
 If upstream-branch is `-' then: 1) if the current branch is named like
-`<parent>.d/<name>' then this program merges into `<parent>'; 2) otherwise it
-merges into `master'.
+`<parent>.d/<name>' then `<parent>' is used as upstream-branch; 2) otherwise
+`master' is used.
+
+merge-options are options passed to git-merge.
 
 HELP
 
-# Parse args.
+# Parse args and environment.
 if ARGV[0] == "-h" or ARGV[0] == "--help"
   print HELP
   exit
 end
-dest_branch = ARGV.pop
+current_branch = `git symbolic-ref --short HEAD`.strip
+upstream_branch = ARGV.pop
+if upstream_branch.nil? then
+  abort %(#{PROGRAM}: upstream-branch is not specified)
+end
+if upstream_branch == "-" then
+  upstream_branch =
+    if (x = current_branch[/.d\/[^\/]$/]) then current_branch.chomp(x)
+    else master
+    end
+end
 merge_opts = ARGV
 # Close the current branch!
-current_branch = `git symbolic-ref --short HEAD`.strip
 current_branch_remote =
   `git config --get branch.#{current_branch.esc}.remote`.strip.nil_if_empty
-sh "git checkout #{dest_branch.esc}"
+sh "git checkout #{upstream_branch.esc}"
 sh "git merge #{merge_opts.esc} #{current_branch.esc}"
 sh "git branch -D #{current_branch.esc}"
 if current_branch_remote then
