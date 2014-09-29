@@ -55,7 +55,7 @@ if upstream_branch.nil? then
 end
 if upstream_branch == "-" then
   upstream_branch =
-    if (x = current_branch[/.d\/[^\/]$/]) then current_branch.chomp(x)
+    if (x = current_branch[/\.d\/[^\/]$/]) then current_branch.chomp(x)
     else master
     end
 end
