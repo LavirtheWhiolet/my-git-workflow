@@ -32,7 +32,13 @@ HELP = <<HELP
 
 Usage: #{PROGRAM} [-h|--help] branch-base-name
 
+Creates new branch and checks it out. The new branch name is chosen according to
+the following rules: 1) if the current branch is `master' then
+the new branch is branch-base-name; 2) otherwise the new branch is
+`<current-branch-name>.d/<branch-base-name>'.
 
+If `-h' or `--help' is specified then this program prints this message and
+exits.
 
 HELP
 
@@ -42,23 +48,10 @@ if ARGV[0] == "-h" or ARGV[0] == "--help"
   exit
 end
 current_branch = `git symbolic-ref --short HEAD`.strip
-upstream_branch = ARGV.pop
-if upstream_branch.nil? then
-  abort %(upstream-branch is not specified)
-end
-if upstream_branch == "-" then
-  upstream_branch =
-    if (x = current_branch[/\.d\/[^\/]+$/]) then current_branch.chomp(x)
-    else "master"
-    end
-end
-merge_opts = ARGV
-# Close the current branch!
-current_branch_remote =
-  `git config --get branch.#{current_branch.esc}.remote`.strip.nil_if_empty
-sh "git checkout #{upstream_branch.esc}"
-sh "git merge #{merge_opts.esc} #{current_branch.esc}"
-sh "git branch -D #{current_branch.esc}"
-if current_branch_remote then
-  sh "git push #{current_branch_remote} :#{current_branch.esc}"
-end
+branch_base_name = ARGV[0] or abort %(branch-base-name is not specified)
+# 
+new_branch_name =
+  if current_branch == "master" then branch_base_name
+  else "#{current_branch}.d/#{branch_base_name}"
+  end
+sh "git checkout -b #{new_branch_name.esc}"
