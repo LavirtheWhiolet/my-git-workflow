@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+require 'shellwords'
+
+def sh(command)
+  system command
+  exit $?.exitstatus if $?.exitstatus != 0
+end
+
+class String
+  
+  def esc
+    Shellwords.shellescape(self)
+  end
+  
+  def nil_if_empty
+    nil if empty?
+  end
+  
+end
+
+class Array
+  
+  def esc
+    self.map(&:esc).join(" ")
+  end
+  
+end
+
+PROGRAM = File.basename $0
+
+HELP = <<HELP
+
+Usage: #{PROGRAM} [-h|--help] branch-base-name
+
+Creates new branch and checks it out. The new branch name is chosen according to
+the following rules: 1) if the current branch is `master' then
+the new branch is branch-base-name; 2) otherwise the new branch is
+`<current-branch-name>.d/<branch-base-name>'.
+
+If `-h' or `--help' is specified then this program prints this message and
+exits.
+
+HELP
+
+# Parse args and environment.
+if ARGV[0] == "-h" or ARGV[0] == "--help"
+  print HELP
+  exit
+end
+current_branch = `git symbolic-ref --short HEAD`.strip
+branch_base_name = ARGV[0] or abort %(branch-base-name is not specified)
+# 
+new_branch_name =
+  if current_branch == "master" then branch_base_name
+  else "#{current_branch}.d/#{branch_base_name}"
+  end
+sh "git checkout -b #{new_branch_name.esc}"
