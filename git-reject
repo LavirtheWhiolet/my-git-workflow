@@ -36,6 +36,8 @@ Usage: #{PROGRAM} [-h|--help] branch
 
 Removes branch locally and remotely.
 
+If branch is "-" then the current branch is removed.
+
 If "-h" or "--help" is specified then this program prints this message and
 exits.
 
@@ -46,8 +48,28 @@ if ARGV[0] == "-h" or ARGV[0] == "--help"
   print HELP
   exit
 end
-branch = ARGV[0] or abort "#{PROGRAM}: branch to remove is not specified"
+branch = ARGV[0]
+before_remove = lambda {}
+if branch.nil? then
+  abort "#{PROGRAM}: branch to remove is not specified"
+end
+if branch == "-" then
+  current_branch = `git symbolic-ref --short HEAD`.strip
+  branch = current_branch
+  before_remove = lambda do
+    if (x = current_branch[/\.d\/[^\/]+$/]) then
+      begin
+        sh "git checkout #{current_branch.chomp(x).esc}"
+      rescue SystemExit
+        sh "git checkout master"
+      end
+    else
+      sh "git checkout master"
+    end
+  end
+end
 #
+before_remove.()
 branch_remote =
   `git config --get branch.#{branch.esc}.remote`.strip.nil_if_empty
 sh "git branch -D #{branch.esc}"
