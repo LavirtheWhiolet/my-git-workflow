@@ -32,7 +32,7 @@ HELP = <<HELP
 
 Usage: #{PROGRAM} [-h|--help] branch
 
-Removes current branch locally and remotely.
+Removes branch locally and remotely.
 
 If `-h' or `--help' is specified then this program prints this message and
 exits.
