@@ -45,10 +45,10 @@ if ARGV[0] == "-h" or ARGV[0] == "--help"
   exit
 end
 branch = ARGV[0] or abort "#{PROGRAM}: branch to remove is not specified"
-# Close the current branch!
-current_branch_remote =
-  `git config --get branch.#{current_branch.esc}.remote`.strip.nil_if_empty
-sh "git branch -D #{current_branch.esc}"
-if current_branch_remote then
-  sh "git push #{current_branch_remote} :#{current_branch.esc}"
+#
+branch_remote =
+  `git config --get branch.#{branch.esc}.remote`.strip.nil_if_empty
+sh "git branch -D #{branch.esc}"
+if branch_remote then
+  sh "git push #{branch_remote} :#{branch.esc}"
 end
