@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+require 'shellwords'
+
+def sh(command)
+  system command
+  exit $?.exitstatus if $?.exitstatus != 0
+end
+
+class String
+  
+  def esc
+    Shellwords.shellescape(self)
+  end
+  
+  def nil_if_empty
+    nil if empty?
+  end
+  
+end
+
+class Array
+  
+  def esc
+    self.map(&:esc).join(" ")
+  end
+  
+end
+
+PROGRAM = File.basename $0
+
+HELP = <<HELP
+
+Usage: #{PROGRAM} [-h|--help] branch-base-name
+
+
+
+HELP
+
+# Parse args and environment.
+if ARGV[0] == "-h" or ARGV[0] == "--help"
+  print HELP
+  exit
+end
+current_branch = `git symbolic-ref --short HEAD`.strip
+upstream_branch = ARGV.pop
+if upstream_branch.nil? then
+  abort %(upstream-branch is not specified)
+end
+if upstream_branch == "-" then
+  upstream_branch =
+    if (x = current_branch[/\.d\/[^\/]+$/]) then current_branch.chomp(x)
+    else "master"
+    end
+end
+merge_opts = ARGV
+# Close the current branch!
+current_branch_remote =
+  `git config --get branch.#{current_branch.esc}.remote`.strip.nil_if_empty
+sh "git checkout #{upstream_branch.esc}"
+sh "git merge #{merge_opts.esc} #{current_branch.esc}"
+sh "git branch -D #{current_branch.esc}"
+if current_branch_remote then
+  sh "git push #{current_branch_remote} :#{current_branch.esc}"
+end
