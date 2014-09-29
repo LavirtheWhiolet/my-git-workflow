@@ -35,6 +35,10 @@ Usage: #{PROGRAM} [-h|--help] [merge-options] upstream-branch
 Merges current branch into upstream-branch and deletes the current branch
 locally and remotely.
 
+If upstream-branch is `-' then: 1) if the current branch is named like
+`<parent>.d/<name>' then this program merges into `<parent>'; 2) otherwise it
+merges into `master'.
+
 HELP
 
 # Parse args.
