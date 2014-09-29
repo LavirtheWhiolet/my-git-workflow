@@ -56,7 +56,7 @@ end
 if upstream_branch == "-" then
   upstream_branch =
     if (x = current_branch[/\.d\/[^\/]$/]) then current_branch.chomp(x)
-    else master
+    else "master"
     end
 end
 merge_opts = ARGV
