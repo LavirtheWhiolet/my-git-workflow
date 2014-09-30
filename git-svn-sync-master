@@ -16,7 +16,7 @@ fi
 
 current_branch=`git symbolic-ref --short HEAD`
 { [ "$current_branch" = "master" ] || git checkout master; } && \
-git pull --rebase && \
+git pull && \
 git svn rebase && \
 git svn dcommit && \
 git push && \
