@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ "$1" = "-h" -o "$1" = "--help" ]; then
+  cat <<HELP
+
+Usage: `basename $0` [options]
+
+The same as "git reset --hard [options]" but removes untracked files as well.
+
+HELP
+  exit
+fi
+
+git add -A && git reset --hard "$@"

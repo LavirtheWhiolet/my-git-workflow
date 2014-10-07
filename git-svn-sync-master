@@ -3,7 +3,7 @@
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
   cat <<HELP
 
-Usage: git-svn-sync-master [-h|--help]
+Usage: `basename $0` [-h|--help]
 
 Synchronizes "master" branch, its upstream counterpart and SVN trunk.
 
