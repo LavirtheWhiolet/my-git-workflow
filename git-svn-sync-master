@@ -5,7 +5,7 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 
 Usage: git-svn-sync-master [-h|--help]
 
-Synchronizes master branch with SVN trunk.
+Synchronizes "master" branch, its upstream counterpart and SVN trunk.
 
 If "-h" or "--help" is specified then this program prints this message and
 exits.
@@ -19,5 +19,5 @@ current_branch=`git symbolic-ref --short HEAD`
 git pull && \
 git svn rebase && \
 git svn dcommit && \
-git push && \
+git push `git config branch.master.remote` master && \
 { [ "$current_branch" = "master" ] || git checkout "$current_branch"; }
