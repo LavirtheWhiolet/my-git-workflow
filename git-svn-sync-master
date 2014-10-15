@@ -13,8 +13,9 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
 
 Usage: $PROGRAM [-h|--help]
 
-Synchronizes "master" branch, its upstream counterpart and SVN trunk.
-All remote changes are merged using "git rebase --preserve-merges".
+Synchronizes "master" branch, its remote counterpart and SVN trunk
+from svn-remote "svn". All remote changes are merged using
+"git rebase --preserve-merges".
 
 If "-h" or "--help" is specified then this program prints this message and
 exits.
@@ -26,6 +27,9 @@ fi
 current_branch=`git symbolic-ref --short HEAD`
 { [ "$current_branch" = "master" ] || log_run git checkout master; } && \
 log_run git pull --rebase=preserve && \
+log_run git update-ref -m 'update_SVN_trunk_ref_with_master_ref' \
+  "`git config svn-remote.svn.fetch | cut -d ':' -f 2`" \
+  "`git show-ref --verify --hash refs/heads/master`" && \
 log_run git svn rebase --preserve-merges && \
 log_run git svn dcommit && \
 log_run git push `git config branch.master.remote` master && \
