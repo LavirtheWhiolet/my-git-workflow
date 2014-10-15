@@ -11,4 +11,4 @@ HELP
   exit
 fi
 
-git add -A && git reset --hard "$@"
+git add -A :/ && git reset --hard "$@"
