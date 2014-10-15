@@ -57,6 +57,7 @@ if branch == "-" then
   current_branch = `git symbolic-ref --short HEAD`.strip
   branch = current_branch
   before_remove = lambda do
+    sh "git-reset-all"
     if (x = current_branch[/\.d\/[^\/]+$/]) then
       begin
         sh "git checkout #{current_branch.chomp(x).esc}"
