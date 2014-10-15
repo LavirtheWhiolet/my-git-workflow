@@ -1,9 +1,17 @@
 #!/bin/bash
 
+PROGRAM="`basename "$0"`"
+
+function log_run()
+{
+  echo "$PROGRAM:" "$@" >&2
+  "$@"
+}
+
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
   cat <<HELP
 
-Usage: `basename $0` [-h|--help]
+Usage: $PROGRAM [-h|--help]
 
 Synchronizes "master" branch, its upstream counterpart and SVN trunk.
 All remote changes are merged using "git rebase --preserve-merges".
@@ -16,9 +24,9 @@ HELP
 fi
 
 current_branch=`git symbolic-ref --short HEAD`
-{ [ "$current_branch" = "master" ] || git checkout master; } && \
-git pull --rebase=preserve && \
-git svn rebase --preserve-merges && \
-git svn dcommit && \
-git push `git config branch.master.remote` master && \
-{ [ "$current_branch" = "master" ] || git checkout "$current_branch"; }
+{ [ "$current_branch" = "master" ] || log_run git checkout master; } && \
+log_run git pull --rebase=preserve && \
+log_run git svn rebase --preserve-merges && \
+log_run git svn dcommit && \
+log_run git push `git config branch.master.remote` master && \
+{ [ "$current_branch" = "master" ] || log_run git checkout "$current_branch"; }
