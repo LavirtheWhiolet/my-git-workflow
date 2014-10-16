@@ -27,9 +27,9 @@ fi
 current_branch=`git symbolic-ref --short HEAD`
 { [ "$current_branch" = "master" ] || log_run git checkout master; } && \
 log_run git pull --rebase=preserve && \
-log_run git update-ref -m 'update_SVN_trunk_ref_with_master_ref' \
+log_run git update-ref \
   "`git config svn-remote.svn.fetch | cut -d ':' -f 2`" \
-  "`git show-ref --verify --hash refs/heads/master`" && \
+  "`git log --grep=^git-svn-id: --first-parent -1 --format=%H`" && \
 log_run git svn rebase --preserve-merges && \
 log_run git svn dcommit && \
 log_run git push `git config branch.master.remote` master && \
