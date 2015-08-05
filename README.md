@@ -110,7 +110,7 @@ OK, it's time to go home. Let's synchronize our work with the main repo.
     Your branch is up-to-date with 'origin/desktop-ui'.
     OK
 
-At home we have got some nice idea. Let's check it!
+At home we have got some idea. Let's check it!
 
     $ git open cool-idea
     Switched to a new branch 'desktop-ui.d/cool-idea'
@@ -199,6 +199,6 @@ Let's do some commits and sync our work.
     Your branch is up-to-date with 'origin/some_odd_name-i-even-dont_know'.
     OK
 
-Look, `new-button` is correctly pushed into `some_odd_name-i-even-dont_know`! `git sync` uses `git push`, and this package configures Git so that `git push` pushes to upstream branch.
+Look, branch “new-button” is correctly pushed into “some_odd_name-i-even-dont_know”! `git sync` uses `git push`, and this package configures Git so that `git push` pushes to upstream branch.
 
 To get help on any executable from “bin” you may run it with `-h` or `--help` key.
