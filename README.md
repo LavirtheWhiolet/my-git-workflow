@@ -11,6 +11,10 @@ Run “install.sh” and follow the instructions. You may run it with `BIN=dir s
 How to use
 ----------
 
+You may get help on any executable from “bin”, just run it with `-h` or `--help` key. In “git_aliases” and “shell_aliases” you may see aliases introduced by this piece of software, and in “git_config” you may see how your Git is now configured.
+
+### I still don't get it…
+
 Let me demonstrate it to you. Let's clone some repo and do some contributions.
 
     $ git clone my-cool-startup.git/
@@ -49,8 +53,6 @@ Aren't you tired of that `git add -A :/ …` stuff? Use aliases!
     $ ga.
     [desktop-ui cb98038] ...
      1 file changed, 1 insertion(+)
-
-You may see all the aliases introduced by this piece of software in “git_aliases” and “shell_aliases”.
 
 Now we have a subtask “Add a button” in the task “Desktop UI”. Let's start it.
 
@@ -200,5 +202,3 @@ Let's do some commits and sync our work.
     OK
 
 Look, branch “new-button” is correctly pushed into “some_odd_name-i-even-dont_know”! `git sync` uses `git push`, and this package configures Git so that `git push` pushes to upstream branch.
-
-To get help on any executable from “bin” you may run it with `-h` or `--help` key.
