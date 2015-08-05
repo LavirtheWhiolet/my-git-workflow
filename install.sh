@@ -2,11 +2,11 @@
 
 [ "$BIN" ] || BIN="$HOME/bin"
 
-# Install "git-*" into BIN.
-for file in git-*; do
-  file="$(basename "$file")"
-  cp -v "$file" "$BIN/$file"
-  chmod -v +x "$BIN/$file"
+# Install executables into BIN.
+for file in bin/*; do
+  dst_file="$BIN/$(basename "$file")"
+  cp -v "$file" "$dst_file"
+  chmod -v +x "$dst_file"
 done
 # 
 . ./git_config
