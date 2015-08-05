@@ -1,79 +1,64 @@
-#!/usr/bin/env ruby
-require 'shellwords'
+#!/bin/bash
 
-def sh(command)
-  system command
-  exit $?.exitstatus if $?.exitstatus != 0
-end
+function usage() {
+  cat <<USAGE
 
-class String
-  
-  def esc
-    Shellwords.shellescape(self)
-  end
-  
-  def nil_if_empty
-    if empty? then nil
-    else self
-    end
-  end
-  
-end
+Usage: $(basename "$0") [options] [branch]
 
-class Array
-  
-  def esc
-    self.map(&:esc).join(" ")
-  end
-  
-end
+Removes specified branch and its upstream branch (if configured). If the branch
+is not specified then the current branch is removed.
 
-PROGRAM = File.basename $0
+If the current branch is removed then all not committed changes are reset!
 
-HELP = <<HELP
+Options:
+  -h, --help     Print this message and exit.
 
-Usage: #{PROGRAM} [-h|--help] branch
+USAGE
+}
 
-Removes branch locally and remotely.
-
-If branch is "-" then the current branch is removed.
-
-If "-h" or "--help" is specified then this program prints this message and
-exits.
-
-HELP
+# Usage: parent-branch-for <branch>
+function parent-branch-for() {
+  t="$(echo "$1" | sed -re 's/(.*)\.d\/.*$/\1/')"
+  if [ "$t" == "$1" ]; then echo "master"
+  else echo "$t"
+  fi
+}
 
 # Parse args.
-if ARGV[0] == "-h" or ARGV[0] == "--help"
-  print HELP
-  exit
-end
-branch = ARGV[0]
-before_remove = lambda {}
-if branch.nil? then
-  abort "#{PROGRAM}: branch to remove is not specified"
-end
-if branch == "-" then
-  current_branch = `git symbolic-ref --short HEAD`.strip
-  branch = current_branch
-  before_remove = lambda do
-    sh "git-reset-all"
-    if (x = current_branch[/.*(\.d\/.*)/, 1]) then
-      begin
-        sh "git checkout #{current_branch.chomp(x).esc}"
-      rescue SystemExit
-        sh "git checkout master"
-      end
-    else
-      sh "git checkout master"
-    end
-  end
-end
-#
-before_remove.()
-branch_remote =
-  `git config --get branch.#{branch.esc}.remote`.strip.nil_if_empty
-sh "git branch -D #{branch.esc}"
-if branch_remote then
-  sh "git push #{branch_remote} :#{branch.esc}"
-end
+if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
+branch_arg="$1"
+# 
+current_branch="$(git symbolic-ref --short HEAD)" && \
+# Branch to remove.
+branch="$(
+  if [ "$branch_arg" == "" ]; then echo "$current_branch"
+  else echo "$branch_arg"
+  fi
+)" && \
+# If removing the current branch then reset all changes and checkout a different
+# branch.
+if [ "$branch" == "$current_branch" ]; then
+  git reset --hard && git clean -df && \
+  git checkout "$(parent-branch-for "$branch")" || git checkout "master"
+fi && \
+# Remove upstream branch (if configured).
+{
+  upstream_branch_ref="$(
+    git for-each-ref --format='%(upstream)' "refs/heads/$branch"
+  )"
+  if [ "$upstream_branch_ref" ]; then
+    {
+      remote="$(git config --get "branch.$branch.remote")" && \
+      upstream_branch="${upstream_branch_ref#"refs/remotes/$remote/"}" && \
+      git push "$remote" ":$upstream_branch"
+    } || \
+    {
+      postponed_file="$(git rev-parse --git-dir)/postponed"
+      echo "error: Can not remove upstream branch \"$upstream_branch\"." >&2
+      echo "error: This will be logged into \"$postponed_file\"." >&2
+      echo "$remote :$upstream_branch" >>"$postponed_file"
+    }
+  fi
+} && \
+# 
+git branch -D "$branch"

@@ -1,59 +1,30 @@
-#!/usr/bin/env ruby
-require 'shellwords'
+#!/bin/bash
 
-def sh(command)
-  system command
-  exit $?.exitstatus if $?.exitstatus != 0
-end
-
-class String
-  
-  def esc
-    Shellwords.shellescape(self)
-  end
-  
-  def nil_if_empty
-    if empty? then nil
-    else self
-    end
-  end
-  
-end
-
-class Array
-  
-  def esc
-    self.map(&:esc).join(" ")
-  end
-  
-end
-
-PROGRAM = File.basename $0
-
-HELP = <<HELP
-
-Usage: #{PROGRAM} [-h|--help] branch-base-name
+function usage() {
+  cat <<USAGE
+    
+Usage: $(basename "$0") [options] branch-base-name
 
 Creates new branch and checks it out. The new branch name is chosen according to
 the following rules: 1) if the current branch is "master" then
-the new branch is branch-base-name; 2) otherwise the new branch is
+the new branch is "branch-base-name"; 2) otherwise the new branch is
 "<current-branch-name>.d/<branch-base-name>".
 
-If "-h" or "--help" is specified then this program prints this message and
-exits.
+Options:
+  -h, --help     Print this message and exit.
 
-HELP
+USAGE
+}
 
-# Parse args and environment.
-if ARGV[0] == "-h" or ARGV[0] == "--help"
-  print HELP
-  exit
-end
-current_branch = `git symbolic-ref --short HEAD`.strip
-branch_base_name = ARGV[0] or abort %(branch-base-name is not specified)
-# 
-new_branch_name =
-  if current_branch == "master" then branch_base_name
-  else "#{current_branch}.d/#{branch_base_name}"
-  end
-sh "git checkout -b #{new_branch_name.esc}"
+# Parse args.
+if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "" ]; then usage; exit; fi
+branch_base_name="$1"
+# Do the job.
+current_branch="$(git symbolic-ref --short HEAD)" && \
+{
+  if [ "$current_branch" == "master" ]; then
+    git checkout -b "$branch_base_name"
+  else
+    git checkout -b "$current_branch.d/$branch_base_name"
+  fi
+}

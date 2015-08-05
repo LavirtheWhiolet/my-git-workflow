@@ -1,76 +1,35 @@
-#!/usr/bin/env ruby
-require 'shellwords'
+#!/bin/bash
 
-def sh(command)
-  system command
-  exit $?.exitstatus if $?.exitstatus != 0
-end
+function usage() {
+  cat <<USAGE
 
-class String
-  
-  def esc
-    Shellwords.shellescape(self)
-  end
-  
-  def nil_if_empty
-    if empty? then nil
-    else self
-    end
-  end
-  
-end
+Usage: $(basename "$0") [options] [merge-options]
 
-class Array
-  
-  def esc
-    self.map(&:esc).join(" ")
-  end
-  
-end
-
-PROGRAM = File.basename $0
-
-HELP = <<HELP
-
-Usage: #{PROGRAM} [-h|--help] [merge-options] upstream-branch
-
-Merges current branch into upstream-branch and deletes the current branch
-locally and remotely.
-
-If upstream-branch is "-" then: 1) if the current branch is named like
-"<parent>.d/<name>" then "<parent>" is used as upstream-branch; 2) otherwise
-"master" is used.
+Merges the current branch into the parent branch and deletes the current branch
+and its upstream branch (if configured). The parent branch is chosen
+according to the following rules: 1) if the current branch is named like
+"<parent>.d/<name>" then "<parent>" is used; 2) otherwise "master" is used.
 
 merge-options are options passed to git-merge.
 
-If "-h" or "--help" is specified then this program prints this message and
-exits.
+Options:
+  -h, --help     Print this message and exit.
 
-HELP
+USAGE
+}
 
-# Parse args and environment.
-if ARGV[0] == "-h" or ARGV[0] == "--help"
-  print HELP
-  exit
-end
-current_branch = `git symbolic-ref --short HEAD`.strip
-upstream_branch = ARGV.pop
-if upstream_branch.nil? then
-  abort %(upstream-branch is not specified)
-end
-if upstream_branch == "-" then
-  upstream_branch =
-    if (x = current_branch[/.*(\.d\/.*)/, 1]) then current_branch.chomp(x)
-    else "master"
-    end
-end
-merge_opts = ARGV
-# Close the current branch!
-current_branch_remote =
-  `git config --get branch.#{current_branch.esc}.remote`.strip.nil_if_empty
-sh "git checkout #{upstream_branch.esc}"
-sh "git merge #{merge_opts.esc} #{current_branch.esc}"
-sh "git branch -D #{current_branch.esc}"
-if current_branch_remote then
-  sh "git push #{current_branch_remote} :#{current_branch.esc}"
-end
+# Usage: parent-branch-for <branch>
+function parent-branch-for() {
+  t="$(echo "$1" | sed -re 's/(.*)\.d\/.*$/\1/')"
+  if [ "$t" == "$1" ]; then echo "master"
+  else echo "$t"
+  fi
+}
+
+# Parse args.
+if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
+# Do the job.
+current_branch="$(git symbolic-ref --short HEAD)" && \
+git checkout "$(parent-branch-for "$current_branch")" && \
+git merge "$@" "$current_branch" && \
+exec git reject "$current_branch"

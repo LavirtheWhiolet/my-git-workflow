@@ -1,0 +1,126 @@
+#!/bin/bash
+
+function usage() {
+  cat <<USAGE
+
+Usage: $(basename "$0") [options]
+
+Pulls and pushes changes from/to upstream branches (if configured), removes
+branches which have their upstream counterparts deleted, pushes branches which
+have no upstream configuration to "origin".
+
+For each branch pulling is performed with command "git pull", pushing is
+performed with "git push". You may use "git config" to change their behavior.
+
+Options:
+  -h, --help     Print this message and exit.
+
+USAGE
+}
+
+# Used by prune_if_needed only.
+declare -A remote_status
+
+# Usage: prune_if_needed <remote>
+# Returns 0 if the remote is pruned successfully and 1 in case of error.
+# It never accesses any remote twice.
+# It always prints error message in case of error.
+function prune_if_needed() {
+  local remote="$1"
+  # If remote's status is unknown then try to prune the remote and update
+  # the status.
+  if [ -z "${remote_status["$remote"]}" ]; then
+    {
+      git remote prune "$remote" && \
+      remote_status["$remote"]="pruned"
+    } || \
+    {
+      remote_status["$remote"]="offline"
+    }
+  fi
+  # 
+  if [ "${remote_status["$remote"]}" == "pruned" ]; then
+    return 0
+  else
+    echo "error: $remote is inaccessible." >&2
+    return 1
+  fi
+}
+
+# Parse args.
+if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
+# Store the current branch &
+# check that we are in Git repository.
+old_current_branch="$(git symbolic-ref --short HEAD)" || exit $?
+# Do the job!
+errors_count=0
+{
+  # Usage: error_and_continue [msg]
+  # Prints "error: $msg" (if msg is specified) to stderr, increases errors_count
+  # and continue-s.
+  function error_and_continue() {
+    let errors_count=errors_count+1
+    [ "$1" ] && echo "error: $1" >&2
+    continue
+  }
+  # Usage: delete_branch <branch>
+  # Deletes local branch trying various ways.
+  function delete_branch() {
+    {
+      git branch -D "$1"
+    } || \
+    {
+      git checkout "master" && \
+      git branch -D "$1"
+    }
+  }
+  # 
+  list="$(git for-each-ref --format='%(refname):%(upstream)' refs/heads/**)" || exit $?
+  for ref_and_upstream_ref in $list; do
+    ref="$(echo "$ref_and_upstream_ref" | cut -d ':' -f 1)"
+    upstream_ref="$(echo "$ref_and_upstream_ref" | cut -d ':' -f 2)"
+    branch="${ref#refs/heads/}"
+    #
+    echo "---- branch \"$branch\" ----" >&2
+    # If upstream info is set...
+    if [ "$upstream_ref" ]; then
+      remote="$(git config --get "branch.$branch.remote")" || error_and_continue "Can not determine upstream remote repository for branch \"$branch\"."
+      prune_if_needed "$remote" || error_and_continue
+      # If upstream ref. exists...
+      if git show-ref "$upstream_ref" >/dev/null; then
+        {
+          git checkout "$branch" && \
+          git pull && \
+          git push
+        } || \
+        # Switching/pulling/pushing went wrong. That's probably due to
+        # conflicts. We need the user's intervention.
+        exit $?
+      # If upstream ref. does not exist...
+      else
+        delete_branch "$branch" || error_and_continue
+      fi
+    # If upstream info is not set...
+    else
+      remote="origin"
+      prune_if_needed "$remote" || error_and_continue
+      {
+        git push --set-upstream "$remote" "$branch:$branch"
+      } || \
+      # Pushing went wrong. That's probably due to conflicts.
+      # We need user's intervention.
+      exit $?
+    fi
+  done
+}
+# 
+echo "------------------------" >&2
+git checkout "$old_current_branch" || git checkout "master" || exit $?
+# Final report.
+if [ "$errors_count" == "0" ]; then
+  echo "OK" >&2
+  exit 0
+else
+  echo "ERRORS: $errors_count"
+  exit 1
+fi

@@ -1,7 +1,17 @@
 #!/bin/sh
 
-# Install "git-*".
-BIN="$HOME/bin"
-ls -1 git-* | xargs -d "\n" -I '{}' sh -c "cp \"{}\" \"$BIN\" && chmod +x \"$BIN/{}\""
-# Install "config.sh".
-exec sh config.sh
+[ "$BIN" ] || BIN="$HOME/bin"
+
+# Install "git-*" into BIN.
+for file in git-*; do
+  file="$(basename "$file")"
+  cp -v "$file" "$BIN/$file"
+  chmod -v +x "$BIN/$file"
+done
+# 
+. ./git_config
+. ./git_aliases
+# Install "shell_aliases".
+cp -v "shell_aliases" "$HOME/.my-git-workflow-aliases"
+echo ">>> Add \". ~/.my-git-workflow-aliases\" to your \".bashrc\" (or to"
+echo ">>> another shell initialization file)."

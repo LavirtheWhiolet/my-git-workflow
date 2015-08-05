@@ -1,0 +1,2 @@
+git config --global alias.rst-all "!git reset --hard && git clean -df"
+git config --global alias.co "checkout"
