@@ -87,7 +87,7 @@ errors_count=0
       remote="$(git config --get "branch.$branch.remote")" || error_and_continue "Can not determine upstream remote repository for branch \"$branch\"."
       prune_if_needed "$remote" || error_and_continue
       # If upstream ref. exists...
-      if git show-ref "$upstream_ref" >/dev/null || [ "$branch" == "master" ]; then
+      if git show-ref "$upstream_ref" >/dev/null; then
         {
           git checkout "$branch" && \
           git pull && \
@@ -98,7 +98,15 @@ errors_count=0
         exit $?
       # If upstream ref. does not exist...
       else
-        delete_branch "$branch" || error_and_continue
+        # If the branch is "master" then we have probably cloned an empty repository.
+        # Just push the "master" branch.
+        if [ "$branch" == "master" ]; then
+          git push || error_and_continue
+        # If the branch is not "master" then it has been deleted remotely.
+        # Deleted it locally as well.
+        else
+          delete_branch "$branch" || error_and_continue
+        fi
       fi
     # If upstream info is not set...
     else
