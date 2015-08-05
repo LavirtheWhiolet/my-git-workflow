@@ -98,7 +98,19 @@ errors_count=0
         exit $?
       # If upstream ref. does not exist...
       else
-        delete_branch "$branch" || error_and_continue
+        if [ "$branch" == "master" ]; then
+          # We have cloned an empty repository. In such a clone "master" usually
+          # tracks unexisting remote "master" branch. So just push "master".
+          {
+            git checkout "master" && \
+            git push
+          } || \
+          # Something went wrong. We need user's intervention.
+          exit $?
+        else
+          # The branch is deleted remotely. Delete it locally as well.
+          delete_branch "$branch" || error_and_continue
+        fi
       fi
     # If upstream info is not set...
     else
