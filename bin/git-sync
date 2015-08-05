@@ -102,10 +102,10 @@ errors_count=0
           # We have cloned an empty repository. In such a clone "master" usually
           # tracks unexisting remote "master" branch. So just push "master".
           {
-            git checkout "$branch" && \
+            git checkout "master" && \
             git push
           } || \
-          # Something went wrong. We need user's interaction.
+          # Something went wrong. We need user's intervention.
           exit $?
         else
           # The branch is deleted remotely. Delete it locally as well.
