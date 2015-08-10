@@ -1,1 +1,1 @@
-git config --global alias.reset-all "!git reset --hard && git clean -df"
+git config --global alias.rst "!git reset --hard && git clean -df"
