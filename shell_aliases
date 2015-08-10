@@ -1,4 +1,4 @@
 alias ga="git add -A :/ && git commit -am"
 alias ga.="ga ..."
-alias gst="git status; echo $'\nBranches:' && git branch"
 alias gd="git diff HEAD"
+alias gb="git branch"
