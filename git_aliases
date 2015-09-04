@@ -1,1 +1,0 @@
-git config --global alias.rst "!git reset --hard && git clean -df"

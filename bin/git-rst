@@ -1,0 +1,19 @@
+#!/bin/bash
+
+function usage() {
+  cat <<USAGE
+
+Usage: $(basename "$0") [options]
+
+Discards all changes and removes all untracked files from the working tree.
+
+Options:
+  -h, --help     Print this message and exit.
+
+USAGE
+}
+
+# Parse args.
+if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
+#
+git clean -df && git reset --hard
