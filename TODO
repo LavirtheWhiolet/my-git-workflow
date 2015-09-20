@@ -1,0 +1,2 @@
+Current implementation may create a local branch not tracking the remote branch
+with the same name. Also it prints the nasty "fatal" error if the branch exists.
