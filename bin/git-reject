@@ -3,10 +3,10 @@
 function usage() {
   cat <<USAGE
 
-Usage: $(basename "$0") [options] [branch]
+Usage: $(basename "$0") [options] [branches]
 
-Removes specified branch and its upstream branch (if configured). If the branch
-is not specified then the current branch is removed.
+Removes specified branch and its upstream branches (if configured). If the
+branches are not specified then the current branch is removed.
 
 If the current branch is removed then all not committed changes are reset!
 
@@ -24,41 +24,54 @@ function parent-branch-for() {
   fi
 }
 
+function current_branch() {
+  git symbolic-ref --short HEAD
+}
+
+# Usage: reject <branch>
+function reject() {
+  # 
+  current_branch="$(current_branch)" && \
+  # Branch to remove.
+  branch="$1" && \
+  # If removing the current branch then reset all changes and checkout 
+  # a different branch.
+  if [ "$branch" == "$current_branch" ]; then
+    git reset --hard && git clean -df && \
+    git checkout "$(parent-branch-for "$branch")" || git checkout "master"
+  fi && \
+  # Remove upstream branch (if configured).
+  {
+    upstream_branch_ref="$(
+      git for-each-ref --format='%(upstream)' "refs/heads/$branch"
+    )"
+    if [ "$upstream_branch_ref" ]; then
+      {
+        remote="$(git config --get "branch.$branch.remote")" && \
+        upstream_branch="${upstream_branch_ref#"refs/remotes/$remote/"}" && \
+        git push "$remote" ":$upstream_branch"
+      } || \
+      {
+        postponed_file="$(git rev-parse --git-dir)/postponed"
+        echo "error: Can not remove upstream branch \"$upstream_branch\"." >&2
+        echo "error: This will be logged into \"$postponed_file\"." >&2
+        echo "$remote :$upstream_branch" >>"$postponed_file"
+      }
+    fi
+  } && \
+  # 
+  git branch -D "$branch"
+}
+
 # Parse args.
 if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
-branch_arg="$1"
-# 
-current_branch="$(git symbolic-ref --short HEAD)" && \
-# Branch to remove.
-branch="$(
-  if [ "$branch_arg" == "" ]; then echo "$current_branch"
-  else echo "$branch_arg"
-  fi
-)" && \
-# If removing the current branch then reset all changes and checkout a different
-# branch.
-if [ "$branch" == "$current_branch" ]; then
-  git reset --hard && git clean -df && \
-  git checkout "$(parent-branch-for "$branch")" || git checkout "master"
-fi && \
-# Remove upstream branch (if configured).
-{
-  upstream_branch_ref="$(
-    git for-each-ref --format='%(upstream)' "refs/heads/$branch"
-  )"
-  if [ "$upstream_branch_ref" ]; then
-    {
-      remote="$(git config --get "branch.$branch.remote")" && \
-      upstream_branch="${upstream_branch_ref#"refs/remotes/$remote/"}" && \
-      git push "$remote" ":$upstream_branch"
-    } || \
-    {
-      postponed_file="$(git rev-parse --git-dir)/postponed"
-      echo "error: Can not remove upstream branch \"$upstream_branch\"." >&2
-      echo "error: This will be logged into \"$postponed_file\"." >&2
-      echo "$remote :$upstream_branch" >>"$postponed_file"
-    }
-  fi
-} && \
-# 
-git branch -D "$branch"
+# Do the job.
+if [ -z "$@" ]; then
+  branch="$(current_branch)" && \
+  reject "$branch"
+else
+  while [ "$@" ]; do
+    reject "$1" || exit $?
+    shift
+  done
+fi
