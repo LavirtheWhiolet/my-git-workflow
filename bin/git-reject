@@ -66,12 +66,12 @@ function reject() {
 # Parse args.
 if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
 # Do the job.
-if [ -z "$@" ]; then
-  branch="$(current_branch)" && \
-  reject "$branch"
-else
+if [ "$@" ]; then
   while [ "$@" ]; do
     reject "$1" || exit $?
     shift
   done
+else
+  branch="$(current_branch)" && \
+  reject "$branch"
 fi
