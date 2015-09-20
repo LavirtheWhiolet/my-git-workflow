@@ -3,9 +3,11 @@
 function usage() {
   cat <<USAGE
 
-Usage: $(basename "$0") [options]
+Usage: $(basename "$0") [options] [reset-options]
 
 Discards all changes and removes all untracked files from the working tree.
+
+reset-options are extra options passed to git-reset.
 
 Options:
   -h, --help     Print this message and exit.
@@ -16,4 +18,4 @@ USAGE
 # Parse args.
 if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
 #
-git clean -df && git reset --hard
+git clean -df && git reset --hard "$@"
