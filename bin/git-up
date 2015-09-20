@@ -1,0 +1,30 @@
+#!/bin/bash
+
+function usage() {
+  cat <<USAGE
+
+Usage: $(basename "$0") [options]
+
+Checks out the parent branch. The parent branch is chosen according to the
+following rules: 1) if the current branch is named like "<parent>.d/<name>"
+then "<parent>" is used; 2) otherwise "master" is used.
+
+Options:
+  -h, --help     Print this message and exit.
+
+USAGE
+}
+
+# Usage: parent-branch-for <branch>
+function parent-branch-for() {
+  t="$(echo "$1" | sed -re 's/(.*)\.d\/.*$/\1/')"
+  if [ "$t" == "$1" ]; then echo "master"
+  else echo "$t"
+  fi
+}
+
+# Parse args.
+if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
+# Do the job.
+current_branch="$(git symbolic-ref --short HEAD)" && \
+exec git checkout "$(parent-branch-for "$current_branch")"
