@@ -66,8 +66,8 @@ function reject() {
 # Parse args.
 if [ "$1" == "-h" -o "$1" == "--help" ]; then usage; exit; fi
 # Do the job.
-if [ "$@" ]; then
-  while [ "$@" ]; do
+if [ "$1" ]; then
+  while [ "$1" ]; do
     reject "$1" || exit $?
     shift
   done
